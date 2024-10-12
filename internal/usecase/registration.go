@@ -41,6 +41,8 @@ func (su *registrationUsecase) CreateAccessToken(user *domain.Customer, secret s
 	return token.CreateAccessToken(user, secret, expiry)
 }
 
+/*
 func (su *registrationUsecase) CreateRefreshToken(user *domain.Customer, secret string, expiry int) (refreshToken string, err error) {
 	return token.CreateRefreshToken(user, secret, expiry)
 }
+*/

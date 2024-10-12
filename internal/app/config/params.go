@@ -11,9 +11,9 @@ type AppParams struct {
 	DatabaseURI          *string `env:"DATABASE_URI"`
 	AccrualSystemAddress *string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 	AccessTokenSecret    *string `env:"ACCESS_TOKEN_SECRET"`
-	RefreshTokenSecret   *string `env:"REFRESH_TOKEN_SECRET"`
 	ExpireAccessToken    *int    `env:"EXPIRE_ACCESS_TOKEN"`
-	ExpireRefreshToken   *int    `env:"EXPIRE_REFRESH_TOKEN"`
+	//	RefreshTokenSecret   *string `env:"REFRESH_TOKEN_SECRET"`
+	//	ExpireRefreshToken   *int    `env:"EXPIRE_REFRESH_TOKEN"`
 }
 
 func parseEnv(p *AppParams) error {
@@ -45,21 +45,23 @@ func parseFlags(p *AppParams) {
 		p.AccessTokenSecret = AccessTokenSecretFlag
 	}
 
-	RefreshTokenSecretFlag := flag.String("refresh_secret", "1234", "refresh token secret")
-	if p.RefreshTokenSecret == nil {
-		p.RefreshTokenSecret = RefreshTokenSecretFlag
-	}
+	/*	RefreshTokenSecretFlag := flag.String("refresh_secret", "1234", "refresh token secret")
+		if p.RefreshTokenSecret == nil {
+			p.RefreshTokenSecret = RefreshTokenSecretFlag
+		}
+	*/
 
 	ExpireAccessTokenFlag := flag.Int("expire_access", 1, "expire access token (hours)")
 	if p.ExpireAccessToken == nil {
 		p.ExpireAccessToken = ExpireAccessTokenFlag
 	}
 
-	ExpireRefreshTokenFlag := flag.Int("expire_refresh", 3, "expire refresh token (hours)")
-	if p.ExpireRefreshToken == nil {
-		p.ExpireRefreshToken = ExpireRefreshTokenFlag
-	}
-
+	/*
+		ExpireRefreshTokenFlag := flag.Int("expire_refresh", 3, "expire refresh token (hours)")
+		if p.ExpireRefreshToken == nil {
+			p.ExpireRefreshToken = ExpireRefreshTokenFlag
+		}
+	*/
 	flag.Parse()
 }
 

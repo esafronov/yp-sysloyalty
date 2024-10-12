@@ -6,6 +6,6 @@ type RegistrationRequest struct {
 }
 
 type RegistrationReponse struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
+	AccessToken string `json:"accessToken"`
+	//	RefreshToken string `json:"refreshToken"`
 }

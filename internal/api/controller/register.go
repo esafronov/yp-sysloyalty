@@ -61,14 +61,14 @@ func (c *RegisterController) Register(res http.ResponseWriter, req *http.Request
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	refreshToken, err := uc.CreateRefreshToken(customer, *c.params.RefreshTokenSecret, *c.params.ExpireRefreshToken)
-	if err != nil {
-		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
+	/*	refreshToken, err := uc.CreateRefreshToken(customer, *c.params.RefreshTokenSecret, *c.params.ExpireRefreshToken)
+		if err != nil {
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+	*/
 	reponse := &domain.RegistrationReponse{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
+		AccessToken: accessToken,
 	}
 	responseJson, err := json.Marshal(reponse)
 	if err != nil {
@@ -76,6 +76,7 @@ func (c *RegisterController) Register(res http.ResponseWriter, req *http.Request
 		return
 	}
 	res.Header().Set("Content-Type", "application/json")
+	res.Header().Set("Authorization", "Bearer "+accessToken)
 	res.WriteHeader(http.StatusOK)
 	_, err = res.Write(responseJson)
 	if err != nil {

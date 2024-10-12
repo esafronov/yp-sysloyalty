@@ -25,6 +25,8 @@ func (lu *loginUsecase) CreateAccessToken(user *domain.Customer, secret string, 
 	return token.CreateAccessToken(user, secret, expiry)
 }
 
+/*
 func (lu *loginUsecase) CreateRefreshToken(user *domain.Customer, secret string, expiry int) (refreshToken string, err error) {
 	return token.CreateRefreshToken(user, secret, expiry)
 }
+*/
