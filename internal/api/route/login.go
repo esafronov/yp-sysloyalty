@@ -11,6 +11,6 @@ import (
 
 func NewLoginRoute(r chi.Router, db *sql.DB, params *config.AppParams) {
 	cr := repository.NewCustomerRepository(db)
-	c := controller.NewLoginController(cr)
+	c := controller.NewLoginController(cr, params)
 	r.Post("/login", c.Login)
 }

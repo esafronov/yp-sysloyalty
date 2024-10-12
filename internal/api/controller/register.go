@@ -6,9 +6,8 @@ import (
 
 	"github.com/esafronov/yp-sysloyalty/internal/app/config"
 	"github.com/esafronov/yp-sysloyalty/internal/domain"
-	"github.com/esafronov/yp-sysloyalty/internal/logger"
-	"github.com/esafronov/yp-sysloyalty/internal/usecases"
-	"go.uber.org/zap"
+	"github.com/esafronov/yp-sysloyalty/internal/usecase"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type RegisterController struct {
@@ -34,10 +33,9 @@ func (c *RegisterController) Register(res http.ResponseWriter, req *http.Request
 		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
-	uc := usecases.NewRegisterUsecase(c.cr)
+	uc := usecase.NewRegisterUsecase(c.cr)
 	exists, err := uc.LoginExists(req.Context(), request.Login)
 	if err != nil {
-		logger.Log.Error("error ", zap.Error(err))
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -45,9 +43,14 @@ func (c *RegisterController) Register(res http.ResponseWriter, req *http.Request
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
+	password, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 	customer := &domain.Customer{
 		Login:    request.Login,
-		Password: request.Password,
+		Password: string(password),
 	}
 	if err := uc.CreateUser(req.Context(), customer); err != nil {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -73,10 +76,10 @@ func (c *RegisterController) Register(res http.ResponseWriter, req *http.Request
 		return
 	}
 	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(http.StatusOK)
 	_, err = res.Write(responseJson)
 	if err != nil {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	res.WriteHeader(http.StatusOK)
 }
