@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/esafronov/yp-sysloyalty/internal/domain"
 	"github.com/esafronov/yp-sysloyalty/internal/helpers/token"
 )
 
@@ -23,8 +24,8 @@ func JwtAuthMiddleware(secret string) func(h http.Handler) http.Handler {
 						w.WriteHeader(http.StatusUnauthorized)
 						return
 					}
-					nr := r.WithContext(context.WithValue(r.Context(), "x-user-id", userID))
-					h.ServeHTTP(sw, nr)
+					newContext := context.WithValue(r.Context(), domain.CustomerIDKey, userID)
+					h.ServeHTTP(sw, r.WithContext(newContext))
 					return
 				}
 				w.WriteHeader(http.StatusUnauthorized)

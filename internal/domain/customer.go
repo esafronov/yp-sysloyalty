@@ -16,3 +16,7 @@ type CustomerRepository interface {
 	DebitBalance(ctx context.Context, userID int64, debit int) error
 	GetByLogin(ctx context.Context, login string) (*Customer, error)
 }
+
+type customerContextKey string
+
+const CustomerIDKey customerContextKey = "x-user-id"

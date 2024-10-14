@@ -39,6 +39,7 @@ func Run() error {
 	r.Route("/api/user", func(r chi.Router) {
 		route.NewRegisterRoute(r, postgre.DB, params)
 		route.NewLoginRoute(r, postgre.DB, params)
+		route.NewOrdersRoute(r, postgre.DB, params)
 	})
 
 	srv := http.Server{
