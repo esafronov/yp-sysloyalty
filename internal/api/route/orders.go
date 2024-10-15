@@ -12,5 +12,6 @@ func NewOrdersRoute(r chi.Router, db *sql.DB, params *config.AppParams) {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.JwtAuthMiddleware(*params.AccessTokenSecret))
 		NewOrdersPostRoute(r, db, params)
+		NewOrdersGetRoute(r, db, params)
 	})
 }

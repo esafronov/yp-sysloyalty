@@ -63,7 +63,7 @@ func (c *LoginController) Login(res http.ResponseWriter, req *http.Request) {
 	reponse := &domain.LoginReponse{
 		AccessToken: accessToken,
 	}
-	responseJson, err := json.Marshal(reponse)
+	marshaledResponse, err := json.Marshal(reponse)
 	if err != nil {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -71,7 +71,7 @@ func (c *LoginController) Login(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "application/json")
 	res.Header().Set("Authorization", "Bearer "+accessToken)
 	res.WriteHeader(http.StatusOK)
-	_, err = res.Write(responseJson)
+	_, err = res.Write(marshaledResponse)
 	if err != nil {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

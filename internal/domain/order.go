@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 )
 
@@ -17,12 +18,25 @@ type Order struct {
 	CustomerID int64       `json:"-"`
 	Num        string      `json:"number"`
 	Status     OrderStatus `json:"status"`
-	Accrual    int64       `json:"accrual"`
+	Accrual    int64       `json:"accrual,omitempty"`
 	UploadedAt time.Time   `json:"uploaded_at"`
+}
+
+func (o *Order) MarshalJSON() ([]byte, error) {
+	formattedDate := o.UploadedAt.Format(time.RFC3339)
+	type aliasOrder Order
+	alias := struct {
+		aliasOrder
+		UploadedAt string `json:"uploaded_at"`
+	}{
+		aliasOrder: aliasOrder(*o),
+		UploadedAt: formattedDate,
+	}
+	return json.Marshal(alias)
 }
 
 type OrderRepository interface {
 	Create(ctx context.Context, order *Order) error
 	GetByNum(ctx context.Context, num string) (*Order, error)
-	GetAll(ctx context.Context) ([]Order, error)
+	GetByCustomer(ctx context.Context, customerID int64) ([]*Order, error)
 }

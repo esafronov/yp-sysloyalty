@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 
 	"github.com/ShiraazMoollatjie/goluhn"
 	"github.com/esafronov/yp-sysloyalty/internal/app/config"
 	"github.com/esafronov/yp-sysloyalty/internal/domain"
+	"github.com/esafronov/yp-sysloyalty/internal/usecase"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 )
@@ -66,4 +68,26 @@ repeatOrderLoad:
 		return
 	}
 	res.WriteHeader(http.StatusAccepted)
+}
+
+func (c *OrderController) GetOrders(res http.ResponseWriter, req *http.Request) {
+	cid := req.Context().Value(domain.CustomerIDKey).(int64)
+	ou := usecase.NewOrdersUsecase(c.or)
+	orders, err := ou.GetOrdersByCustomer(req.Context(), cid)
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	marshaledOrders, err := json.Marshal(orders)
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(http.StatusOK)
+	_, err = res.Write(marshaledOrders)
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
 }
