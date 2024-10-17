@@ -12,6 +12,7 @@ import (
 	"github.com/esafronov/yp-sysloyalty/internal/app/config"
 	"github.com/esafronov/yp-sysloyalty/internal/logger"
 	"github.com/esafronov/yp-sysloyalty/internal/postgre"
+	"github.com/esafronov/yp-sysloyalty/internal/repository"
 	"github.com/go-chi/chi"
 )
 
@@ -36,12 +37,28 @@ func Run() error {
 	r.Use(middleware.RequestLogger(logger.Log))
 	r.Use(middleware.GzipCompressing)
 
+	customerRepository, err := repository.NewCustomerRepository(postgre.DB)
+	if err != nil {
+		fmt.Println("cust rep")
+		return err
+	}
+	orderRepository, err := repository.NewOrderRepository(postgre.DB)
+	if err != nil {
+		fmt.Println("order rep")
+		return err
+	}
+	withdrawRepisitory, err := repository.NewWithdrawRepository(postgre.DB)
+	if err != nil {
+		fmt.Println("withd rep")
+		return err
+	}
+
 	r.Route("/api/user", func(r chi.Router) {
-		route.NewRegisterRoute(r, postgre.DB, params)
-		route.NewLoginRoute(r, postgre.DB, params)
-		route.NewOrdersRoute(r, postgre.DB, params)
-		route.NewWithdrawlsRoute(r, postgre.DB, params)
-		route.NewBalanceRoute(r, postgre.DB, params)
+		route.NewRegisterRoute(r, customerRepository, params)
+		route.NewLoginRoute(r, customerRepository, params)
+		route.NewOrdersRoute(r, orderRepository, params)
+		route.NewWithdrawlsRoute(r, withdrawRepisitory, params)
+		route.NewBalanceRoute(r, customerRepository, params)
 	})
 
 	srv := http.Server{

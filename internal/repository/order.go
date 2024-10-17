@@ -14,11 +14,41 @@ type orderRepository struct {
 	table string
 }
 
-func NewOrderRepository(db *sql.DB) *orderRepository {
-	return &orderRepository{
+func NewOrderRepository(db *sql.DB) (r *orderRepository, err error) {
+	r = &orderRepository{
 		db:    db,
 		table: OrderTable,
 	}
+	err = r.createTable()
+	return
+}
+
+func (r *orderRepository) createTable() error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	// roll back if commit will fail
+	defer tx.Rollback()
+	tx.Exec(`CREATE TABLE IF NOT EXISTS ` +
+		r.table +
+		`(
+			id bigserial NOT NULL,
+			customer_id bigint NOT NULL,
+			order_num character varying(11) NOT NULL,
+			accrual integer NOT NULL DEFAULT 0,
+			uploaded_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			status character varying NOT NULL,
+			CONSTRAINT order_num UNIQUE (order_num)
+		)`)
+	tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS order_num ON ` + r.table + ` (order_num)`)
+	tx.Exec(`CREATE INDEX IF NOT EXISTS customer_id ON ` + r.table + ` (customer_id)`)
+	tx.Exec(`CREATE INDEX IF NOT EXISTS uploaded_at ON ` + r.table + ` (uploaded_at)`)
+	tx.Exec(`CREATE INDEX IF NOT EXISTS status ON ` + r.table + ` (status)`)
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *orderRepository) Create(ctx context.Context, order *domain.Order) error {

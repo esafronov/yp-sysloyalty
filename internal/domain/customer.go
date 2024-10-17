@@ -15,8 +15,6 @@ type Customer struct {
 
 type CustomerRepository interface {
 	Create(ctx context.Context, user *Customer) error
-	CreditBalance(ctx context.Context, userID int64, credit int) error
-	DebitBalance(ctx context.Context, userID int64, debit int) error
 	GetByLogin(ctx context.Context, login string) (*Customer, error)
 	GetByID(ctx context.Context, userID int64) (*Customer, error)
 	Withdraw(ctx context.Context, userID int64, orderNum string, sum int64, updateFunc func(customer *Customer) error) error

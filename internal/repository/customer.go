@@ -15,11 +15,38 @@ type customerRepository struct {
 	table string
 }
 
-func NewCustomerRepository(db *sql.DB) *customerRepository {
-	return &customerRepository{
+func (r *customerRepository) createTable() error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	// roll back if commit will fail
+	defer tx.Rollback()
+	tx.Exec(`CREATE TABLE IF NOT EXISTS ` +
+		r.table +
+		`(
+			id bigserial NOT NULL,
+			login character varying(100) NOT NULL,
+			password character varying(100) NOT NULL,
+			balance integer DEFAULT 0,
+			withdrawn integer DEFAULT 0,
+			CONSTRAINT customers_pkey PRIMARY KEY (id),
+			CONSTRAINT login UNIQUE (login)
+		)`)
+	tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS login ON ` + r.table + ` (login)`)
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func NewCustomerRepository(db *sql.DB) (r *customerRepository, err error) {
+	r = &customerRepository{
 		db:    db,
 		table: CustomerTable,
 	}
+	err = r.createTable()
+	return
 }
 
 func (r *customerRepository) Create(ctx context.Context, user *domain.Customer) error {
@@ -29,14 +56,6 @@ func (r *customerRepository) Create(ctx context.Context, user *domain.Customer) 
 		return err
 	}
 	user.ID = lastInsertId
-	return nil
-}
-
-func (r *customerRepository) CreditBalance(ctx context.Context, userID int64, amount int) error {
-	return nil
-}
-
-func (r *customerRepository) DebitBalance(ctx context.Context, userID int64, amount int) error {
 	return nil
 }
 

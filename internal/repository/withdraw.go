@@ -14,11 +14,37 @@ type withdrawRepository struct {
 	table string
 }
 
-func NewWithdrawRepository(db *sql.DB) *withdrawRepository {
-	return &withdrawRepository{
+func NewWithdrawRepository(db *sql.DB) (r *withdrawRepository, err error) {
+	r = &withdrawRepository{
 		db:    db,
 		table: WithdrawTable,
 	}
+	err = r.createTable()
+	return
+}
+
+func (r *withdrawRepository) createTable() error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return err
+	}
+	// roll back if commit will fail
+	defer tx.Rollback()
+	tx.Exec(`CREATE TABLE IF NOT EXISTS ` +
+		r.table +
+		`(
+			id bigserial NOT NULL,
+			order_num character varying(11) NOT NULL,
+			sum integer NOT NULL,
+			customer_id bigint NOT NULL,
+			processed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+		)`)
+	tx.Exec(`CREATE INDEX IF NOT EXISTS customer_id ON ` + r.table + ` (customer_id)`)
+	tx.Exec(`CREATE INDEX IF NOT EXISTS processed_at ON ` + r.table + ` (processed_at)`)
+	if err = tx.Commit(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *withdrawRepository) Create(ctx context.Context, withdraw *domain.Withdraw) error {

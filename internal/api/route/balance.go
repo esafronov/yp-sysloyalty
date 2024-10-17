@@ -1,17 +1,16 @@
 package route
 
 import (
-	"database/sql"
-
 	"github.com/esafronov/yp-sysloyalty/internal/api/middleware"
 	"github.com/esafronov/yp-sysloyalty/internal/app/config"
+	"github.com/esafronov/yp-sysloyalty/internal/domain"
 	"github.com/go-chi/chi"
 )
 
-func NewBalanceRoute(r chi.Router, db *sql.DB, params *config.AppParams) {
+func NewBalanceRoute(r chi.Router, cr domain.CustomerRepository, params *config.AppParams) {
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.JwtAuthMiddleware(*params.AccessTokenSecret))
-		NewBalanceGetRoute(r, db, params)
-		NewBalanceWithdrawRoute(r, db, params)
+		NewBalanceGetRoute(r, cr, params)
+		NewBalanceWithdrawRoute(r, cr, params)
 	})
 }
