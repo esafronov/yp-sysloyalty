@@ -28,9 +28,12 @@ func (c *RegisterController) Register(res http.ResponseWriter, req *http.Request
 		return
 	}
 	var request domain.RegistrationRequest
-
 	if err := json.NewDecoder(req.Body).Decode(&request); err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if request.Login == "" || request.Password == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 	uc := usecase.NewRegisterUsecase(c.cr)

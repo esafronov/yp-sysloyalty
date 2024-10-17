@@ -28,9 +28,12 @@ func (c *LoginController) Login(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	var request domain.LoginRequest
-
 	if err := json.NewDecoder(req.Body).Decode(&request); err != nil {
-		http.Error(res, err.Error(), http.StatusBadRequest)
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if request.Login == "" || request.Password == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 	uc := usecase.NewLoginUsecase(c.cr)
@@ -48,7 +51,6 @@ func (c *LoginController) Login(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
-
 	accessToken, err := uc.CreateAccessToken(customer, *c.params.AccessTokenSecret, *c.params.ExpireAccessToken)
 	if err != nil {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

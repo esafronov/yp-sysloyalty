@@ -40,6 +40,8 @@ func Run() error {
 		route.NewRegisterRoute(r, postgre.DB, params)
 		route.NewLoginRoute(r, postgre.DB, params)
 		route.NewOrdersRoute(r, postgre.DB, params)
+		route.NewWithdrawlsRoute(r, postgre.DB, params)
+		route.NewBalanceRoute(r, postgre.DB, params)
 	})
 
 	srv := http.Server{

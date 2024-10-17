@@ -2,15 +2,15 @@ package controller
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
 	"github.com/ShiraazMoollatjie/goluhn"
 	"github.com/esafronov/yp-sysloyalty/internal/app/config"
 	"github.com/esafronov/yp-sysloyalty/internal/domain"
+	"github.com/esafronov/yp-sysloyalty/internal/helpers"
 	"github.com/esafronov/yp-sysloyalty/internal/usecase"
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type OrderController struct {
@@ -36,44 +36,33 @@ func (c *OrderController) PostOrder(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 	orderNum := string(body)
+	if !helpers.ValidateOnlyDigits(orderNum) {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 	if err := goluhn.Validate(orderNum); err != nil {
 		http.Error(res, http.StatusText(http.StatusUnprocessableEntity), http.StatusUnprocessableEntity)
 		return
 	}
-repeatOrderLoad:
-	order, err := c.or.GetByNum(req.Context(), orderNum)
-	if err != nil {
-		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	cid := req.Context().Value(domain.CustomerIDKey).(int64)
-	if order != nil {
-		if order.CustomerID == cid {
+	uc := usecase.NewOrdersUsecase(c.or)
+	customerID := req.Context().Value(domain.CustomerIDKey).(int64)
+	if err = uc.CreateNewOrder(req.Context(), customerID, orderNum); err != nil {
+		if errors.Is(err, usecase.ErrOrdersDuplicateOthers) {
+			http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+		} else if errors.Is(err, usecase.ErrOrdersDuplicateOwn) {
 			res.WriteHeader(http.StatusOK)
 		} else {
-			http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
-		return
-	}
-	order = &domain.Order{
-		CustomerID: cid,
-		Num:        orderNum,
-		Status:     domain.OrderStatusRegistred,
-	}
-	if err = c.or.Create(req.Context(), order); err != nil {
-		if data, ok := err.(*pgconn.PgError); ok && data.Code == pgerrcode.UniqueViolation {
-			goto repeatOrderLoad
-		}
-		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	res.WriteHeader(http.StatusAccepted)
 }
 
 func (c *OrderController) GetOrders(res http.ResponseWriter, req *http.Request) {
-	cid := req.Context().Value(domain.CustomerIDKey).(int64)
+	customerID := req.Context().Value(domain.CustomerIDKey).(int64)
 	ou := usecase.NewOrdersUsecase(c.or)
-	orders, err := ou.GetOrdersByCustomer(req.Context(), cid)
+	orders, err := ou.GetOrdersByCustomer(req.Context(), customerID)
 	if err != nil {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

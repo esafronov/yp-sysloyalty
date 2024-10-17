@@ -9,8 +9,8 @@ import (
 	"github.com/go-chi/chi"
 )
 
-func NewBalanceWithdrawRoute(r chi.Router, db *sql.DB, params *config.AppParams) {
+func NewBalanceGetRoute(r chi.Router, db *sql.DB, params *config.AppParams) {
 	cr := repository.NewCustomerRepository(db)
 	c := controller.NewBalanceController(cr, params)
-	r.Post("/balance/withdraw", c.Withdraw)
+	r.Get("/balance", c.GetBalance)
 }

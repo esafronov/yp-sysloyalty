@@ -49,6 +49,7 @@ func (r *orderRepository) GetByNum(ctx context.Context, num string) (order *doma
 }
 
 func (r *orderRepository) GetByCustomer(ctx context.Context, customerID int64) (orders []*domain.Order, err error) {
+	orders = make([]*domain.Order, 0)
 	rows, err := r.db.QueryContext(ctx, "SELECT id, customer_id, order_num, accrual, uploaded_at, status FROM "+r.table+" WHERE customer_id=$1 ORDER BY uploaded_at DESC", customerID)
 	if err != nil {
 		return nil, err
