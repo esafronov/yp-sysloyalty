@@ -30,7 +30,7 @@ func (r *customerRepository) createTable() error {
 			password character varying(100) NOT NULL,
 			balance integer DEFAULT 0,
 			withdrawn integer DEFAULT 0,
-			CONSTRAINT customers_pkey PRIMARY KEY (id),
+			CONSTRAINT customer_id PRIMARY KEY (id),
 			CONSTRAINT login UNIQUE (login)
 		)`)
 	tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS login ON ` + r.table + ` (login)`)

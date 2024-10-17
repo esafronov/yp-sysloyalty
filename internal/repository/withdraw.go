@@ -37,7 +37,8 @@ func (r *withdrawRepository) createTable() error {
 			order_num character varying(11) NOT NULL,
 			sum integer NOT NULL,
 			customer_id bigint NOT NULL,
-			processed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+			processed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+			CONSTRAINT withdraw_id PRIMARY KEY (id)
 		)`)
 	tx.Exec(`CREATE INDEX IF NOT EXISTS customer_id ON ` + r.table + ` (customer_id)`)
 	tx.Exec(`CREATE INDEX IF NOT EXISTS processed_at ON ` + r.table + ` (processed_at)`)

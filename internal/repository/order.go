@@ -39,6 +39,7 @@ func (r *orderRepository) createTable() error {
 			accrual integer NOT NULL DEFAULT 0,
 			uploaded_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			status character varying NOT NULL,
+			CONSTRAINT order_id PRIMARY KEY (id),
 			CONSTRAINT order_num UNIQUE (order_num)
 		)`)
 	tx.Exec(`CREATE UNIQUE INDEX IF NOT EXISTS order_num ON ` + r.table + ` (order_num)`)
