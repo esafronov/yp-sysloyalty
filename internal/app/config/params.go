@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -12,6 +13,8 @@ type AppParams struct {
 	AccrualSystemAddress *string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 	AccessTokenSecret    *string `env:"ACCESS_TOKEN_SECRET"`
 	ExpireAccessToken    *int    `env:"EXPIRE_ACCESS_TOKEN"`
+	GrabInterval         *int    `env:"GRAB_INTERVAL"`
+	PollWorkerCount      *int    `env:"POLL_WORKER_COUNT"`
 	//	RefreshTokenSecret   *string `env:"REFRESH_TOKEN_SECRET"`
 	//	ExpireRefreshToken   *int    `env:"EXPIRE_REFRESH_TOKEN"`
 }
@@ -30,12 +33,12 @@ func parseFlags(p *AppParams) {
 		p.RunAddress = runAddressFlag
 	}
 
-	databaseURIFlag := flag.String("d", "", "database uri")
+	databaseURIFlag := flag.String("d", "", "database uri (required)")
 	if p.DatabaseURI == nil {
 		p.DatabaseURI = databaseURIFlag
 	}
 
-	accrualSystemAddressFlag := flag.String("r", "localhost:8080", "accrual system address")
+	accrualSystemAddressFlag := flag.String("r", "http://localhost:8081", "accrual system address")
 	if p.AccrualSystemAddress == nil {
 		p.AccrualSystemAddress = accrualSystemAddressFlag
 	}
@@ -51,7 +54,7 @@ func parseFlags(p *AppParams) {
 		}
 	*/
 
-	ExpireAccessTokenFlag := flag.Int("expire_access", 1, "expire access token (hours)")
+	ExpireAccessTokenFlag := flag.Int("expire_access", 1, "expire access token in hours")
 	if p.ExpireAccessToken == nil {
 		p.ExpireAccessToken = ExpireAccessTokenFlag
 	}
@@ -62,6 +65,16 @@ func parseFlags(p *AppParams) {
 			p.ExpireRefreshToken = ExpireRefreshTokenFlag
 		}
 	*/
+
+	GrabIntervalFlag := flag.Int("grab_interval", 1, "grab orders for update interval in minutes")
+	if p.GrabInterval == nil {
+		p.GrabInterval = GrabIntervalFlag
+	}
+
+	PollWorkerCountFlag := flag.Int("worker_count", 2, "poll status worker count")
+	if p.PollWorkerCount == nil {
+		p.PollWorkerCount = PollWorkerCountFlag
+	}
 	flag.Parse()
 }
 
@@ -71,5 +84,9 @@ func GetAppParams() (params *AppParams, err error) {
 		return nil, err
 	}
 	parseFlags(params)
+	if *params.DatabaseURI == "" {
+		flag.PrintDefaults()
+		return nil, fmt.Errorf("database uri is empty")
+	}
 	return
 }

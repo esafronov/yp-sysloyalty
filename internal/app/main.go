@@ -1,10 +1,12 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/esafronov/yp-sysloyalty/internal/api/middleware"
@@ -13,7 +15,9 @@ import (
 	"github.com/esafronov/yp-sysloyalty/internal/logger"
 	"github.com/esafronov/yp-sysloyalty/internal/postgre"
 	"github.com/esafronov/yp-sysloyalty/internal/repository"
+	"github.com/esafronov/yp-sysloyalty/internal/routine"
 	"github.com/go-chi/chi"
+	"go.uber.org/zap"
 )
 
 func Run() error {
@@ -21,15 +25,19 @@ func Run() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("RunAddress: ", *params.RunAddress)
-	fmt.Println("DatabaseURI: ", *params.DatabaseURI)
-
-	if err := postgre.Connect(params.DatabaseURI); err != nil {
-		return err
-	}
 
 	err = logger.Initialize("debug")
 	if err != nil {
+		return err
+	}
+	logger.Log.Info("params",
+		zap.String("RunAddress", *params.RunAddress),
+		zap.String("DatabaseURI", *params.DatabaseURI),
+		zap.Int("PollWorkerCount", *params.PollWorkerCount),
+		zap.Int("GrabInterval", *params.GrabInterval),
+	)
+
+	if err := postgre.Connect(params.DatabaseURI); err != nil {
 		return err
 	}
 
@@ -61,6 +69,19 @@ func Run() error {
 		route.NewBalanceRoute(r, customerRepository, params)
 	})
 
+	ctx, appExit := context.WithCancel(context.Background())
+
+	var wg sync.WaitGroup
+
+	poller := routine.NewPoller(params)
+	grabber := routine.NewGrabber(orderRepository, params)
+
+	orderChan := grabber.Run(ctx, poller.RetryAfterChan, &wg)
+	updateChan := poller.Run(ctx, orderChan, &wg)
+
+	updater := routine.NewUpdater(orderRepository, customerRepository, params)
+	updater.Run(ctx, updateChan, &wg)
+
 	srv := http.Server{
 		Addr:    *params.RunAddress,
 		Handler: r,
@@ -70,6 +91,8 @@ func Run() error {
 		signal.Notify(sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGABRT)
 		s := <-sigs
 		fmt.Println("got signal ", s)
+		appExit()
+		wg.Wait()
 		srv.Close()
 	}()
 

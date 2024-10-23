@@ -39,4 +39,5 @@ type OrderRepository interface {
 	Create(ctx context.Context, order *Order) error
 	GetByNum(ctx context.Context, num string) (*Order, error)
 	GetByCustomer(ctx context.Context, customerID int64) ([]*Order, error)
+	GetNotFinished(ctx context.Context) ([]*Order, error)
 }

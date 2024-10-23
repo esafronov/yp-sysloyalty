@@ -97,3 +97,22 @@ func (r *orderRepository) GetByCustomer(ctx context.Context, customerID int64) (
 	err = rows.Err()
 	return
 }
+
+func (r *orderRepository) GetNotFinished(ctx context.Context) (orders []*domain.Order, err error) {
+	orders = make([]*domain.Order, 0)
+	rows, err := r.db.QueryContext(ctx, "SELECT id, customer_id, order_num, accrual, uploaded_at, status FROM "+r.table+" ORDER BY uploaded_at DESC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var order domain.Order
+		err = rows.Scan(&order.ID, &order.CustomerID, &order.Num, &order.Accrual, &order.UploadedAt, &order.Status)
+		if err != nil {
+			return
+		}
+		orders = append(orders, &order)
+	}
+	err = rows.Err()
+	return
+}
