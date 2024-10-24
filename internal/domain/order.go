@@ -22,6 +22,13 @@ type Order struct {
 	UploadedAt time.Time   `json:"uploaded_at"`
 }
 
+func (o *Order) HasFinalStatus() bool {
+	if o.Status == OrderStatusProcessed || o.Status == OrderStatusInvalid {
+		return true
+	}
+	return false
+}
+
 func (o *Order) MarshalJSON() ([]byte, error) {
 	formattedDate := o.UploadedAt.Format(time.RFC3339)
 	type aliasOrder Order
@@ -39,5 +46,6 @@ type OrderRepository interface {
 	Create(ctx context.Context, order *Order) error
 	GetByNum(ctx context.Context, num string) (*Order, error)
 	GetByCustomer(ctx context.Context, customerID int64) ([]*Order, error)
-	GetNotFinished(ctx context.Context) ([]*Order, error)
+	GetNotFinalStatus(ctx context.Context) ([]*Order, error)
+	UpdateStatus(ctx context.Context, num string, status OrderStatus) error
 }

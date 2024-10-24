@@ -85,19 +85,15 @@ func (p *Poller) Worker(ctx context.Context, orderChan <-chan *domain.Order, wg 
 					time.AfterFunc(time.Duration(retErr.RetryAfter), func() {
 						p.delayed = false
 					})
+					logger.Log.Info("accrual system ask to retry", zap.String("order", order.Num), zap.Error(retErr))
 					continue
 				}
-				/*if errors.Is(err, ErrNoContent) {
-					orderUpdate = domain.OrderUpdate{
-						Num:    order.Num,
-						Status: domain.OrderStatusInvalid,
-					}
-				} else {*/
-
-				logger.Log.Error("worker", zap.Error(err))
+				if errors.Is(err, ErrNoContent) {
+					logger.Log.Info("order is not found in accrual system", zap.String("order", order.Num), zap.Error(err))
+					continue
+				}
+				logger.Log.Error("can't request from accrual system", zap.String("order", order.Num), zap.Error(err))
 				continue
-
-				//}
 			}
 			p.resultChan <- &orderUpdate
 		}

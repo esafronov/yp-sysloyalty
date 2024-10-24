@@ -18,6 +18,7 @@ type CustomerRepository interface {
 	GetByLogin(ctx context.Context, login string) (*Customer, error)
 	GetByID(ctx context.Context, userID int64) (*Customer, error)
 	Withdraw(ctx context.Context, userID int64, orderNum string, sum int64, updateFunc func(customer *Customer) error) error
+	Accrual(ctx context.Context, userID int64, orderNum string, sum int64) error
 }
 
 type customerContextKey string

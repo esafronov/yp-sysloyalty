@@ -98,9 +98,9 @@ func (r *orderRepository) GetByCustomer(ctx context.Context, customerID int64) (
 	return
 }
 
-func (r *orderRepository) GetNotFinished(ctx context.Context) (orders []*domain.Order, err error) {
+func (r *orderRepository) GetNotFinalStatus(ctx context.Context) (orders []*domain.Order, err error) {
 	orders = make([]*domain.Order, 0)
-	rows, err := r.db.QueryContext(ctx, "SELECT id, customer_id, order_num, accrual, uploaded_at, status FROM "+r.table+" ORDER BY uploaded_at DESC")
+	rows, err := r.db.QueryContext(ctx, "SELECT id, customer_id, order_num, accrual, uploaded_at, status FROM "+r.table+" WHERE status IN ($1,$2) ORDER BY uploaded_at DESC", domain.OrderStatusRegistred, domain.OrderStatusProcessing)
 	if err != nil {
 		return nil, err
 	}
@@ -114,5 +114,13 @@ func (r *orderRepository) GetNotFinished(ctx context.Context) (orders []*domain.
 		orders = append(orders, &order)
 	}
 	err = rows.Err()
+	return
+}
+
+func (r *orderRepository) UpdateStatus(ctx context.Context, num string, status domain.OrderStatus) (err error) {
+	_, err = r.db.ExecContext(ctx, "UPDATE "+r.table+" SET status=$1 WHERE order_num=$2", status, num)
+	if err != nil {
+		return
+	}
 	return
 }

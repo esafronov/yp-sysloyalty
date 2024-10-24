@@ -95,7 +95,7 @@ func (r *customerRepository) GetByID(ctx context.Context, userID int64) (*domain
 
 func (r *customerRepository) Withdraw(ctx context.Context, userID int64, orderNum string, sum int64, updateFunc func(customer *domain.Customer) error) error {
 	return postgre.RunInTx(r.db, func(tx *sql.Tx) error {
-		row := tx.QueryRowContext(ctx, "SELECT id, balance FROM "+CustomerTable+" WHERE id=$1 FOR UPDATE", userID)
+		row := tx.QueryRowContext(ctx, "SELECT id, balance FROM "+r.table+" WHERE id=$1 FOR UPDATE", userID)
 		var customer domain.Customer
 		if err := row.Scan(&customer.ID, &customer.Balance); err != nil {
 			return err
@@ -108,6 +108,25 @@ func (r *customerRepository) Withdraw(ctx context.Context, userID int64, orderNu
 			return err
 		}
 		_, err = tx.ExecContext(ctx, "UPDATE "+r.table+" SET balance=balance-$1 WHERE id=$2", sum, userID)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (r *customerRepository) Accrual(ctx context.Context, userID int64, orderNum string, sum int64) error {
+	return postgre.RunInTx(r.db, func(tx *sql.Tx) error {
+		row := tx.QueryRowContext(ctx, "SELECT id FROM "+r.table+" WHERE id=$1 FOR UPDATE", userID)
+		var customer domain.Customer
+		if err := row.Scan(&customer.ID); err != nil {
+			return err
+		}
+		_, err := tx.ExecContext(ctx, "UPDATE "+OrderTable+" SET accrual=$1, order_status=$2 WHERE order_num=$3", sum, domain.OrderStatusProcessed, orderNum)
+		if err != nil {
+			return err
+		}
+		_, err = tx.ExecContext(ctx, "UPDATE "+r.table+" SET balance=balance+$1 WHERE id=$2", sum, userID)
 		if err != nil {
 			return err
 		}

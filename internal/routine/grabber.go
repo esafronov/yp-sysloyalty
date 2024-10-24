@@ -19,7 +19,7 @@ type Grabber struct {
 func NewGrabber(or domain.OrderRepository, params *config.AppParams) *Grabber {
 	return &Grabber{
 		or:           or,
-		grabInterval: time.Duration(1) * time.Minute,
+		grabInterval: time.Duration(*params.GrabInterval) * time.Second,
 	}
 }
 
@@ -27,8 +27,8 @@ func (g *Grabber) Run(appCtx context.Context, retryAfterChan <-chan int, wg *syn
 	ch := make(chan *domain.Order, 1)
 	ticker := time.NewTicker(g.grabInterval)
 	var delayGrabber = func(pause int) {
-		logger.Log.Info("delay collecting orders for a while...", zap.Int("pause", pause))
-		ticker.Reset(time.Duration(pause) * time.Minute)
+		logger.Log.Info("delay collecting orders for a while...", zap.Int("minutes", pause))
+		ticker.Reset(time.Duration(pause*60) * time.Second)
 	}
 	wg.Add(1)
 	go func() {
@@ -51,7 +51,7 @@ func (g *Grabber) Run(appCtx context.Context, retryAfterChan <-chan int, wg *syn
 					ticker.Reset(g.grabInterval)
 				}
 				logger.Log.Info("collect orders for update...")
-				orders, err := g.or.GetNotFinished(appCtx)
+				orders, err := g.or.GetNotFinalStatus(appCtx)
 				if err != nil {
 					logger.Log.Error("collect orders for update", zap.Error(err))
 					continue

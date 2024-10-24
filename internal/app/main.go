@@ -26,10 +26,6 @@ func Run() error {
 		return err
 	}
 
-	err = logger.Initialize("debug")
-	if err != nil {
-		return err
-	}
 	logger.Log.Info("params",
 		zap.String("RunAddress", *params.RunAddress),
 		zap.String("DatabaseURI", *params.DatabaseURI),
@@ -47,17 +43,14 @@ func Run() error {
 
 	customerRepository, err := repository.NewCustomerRepository(postgre.DB)
 	if err != nil {
-		fmt.Println("cust rep")
 		return err
 	}
 	orderRepository, err := repository.NewOrderRepository(postgre.DB)
 	if err != nil {
-		fmt.Println("order rep")
 		return err
 	}
 	withdrawRepisitory, err := repository.NewWithdrawRepository(postgre.DB)
 	if err != nil {
-		fmt.Println("withd rep")
 		return err
 	}
 

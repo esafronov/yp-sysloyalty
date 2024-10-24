@@ -66,7 +66,7 @@ func parseFlags(p *AppParams) {
 		}
 	*/
 
-	GrabIntervalFlag := flag.Int("grab_interval", 1, "grab orders for update interval in minutes")
+	GrabIntervalFlag := flag.Int("grab_interval", 10, "grab orders for update interval in seconds")
 	if p.GrabInterval == nil {
 		p.GrabInterval = GrabIntervalFlag
 	}
