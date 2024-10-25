@@ -35,7 +35,7 @@ func (r *orderRepository) createTable() error {
 		`(
 			id bigserial NOT NULL,
 			customer_id bigint NOT NULL,
-			order_num character varying(11) NOT NULL,
+			order_num character varying(15) NOT NULL,
 			accrual integer NOT NULL DEFAULT 0,
 			uploaded_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			status character varying NOT NULL,

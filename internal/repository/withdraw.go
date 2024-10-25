@@ -34,7 +34,7 @@ func (r *withdrawRepository) createTable() error {
 		r.table +
 		`(
 			id bigserial NOT NULL,
-			order_num character varying(11) NOT NULL,
+			order_num character varying(15) NOT NULL,
 			sum integer NOT NULL,
 			customer_id bigint NOT NULL,
 			processed_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
