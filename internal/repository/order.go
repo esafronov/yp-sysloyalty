@@ -53,12 +53,12 @@ func (r *orderRepository) createTable() error {
 }
 
 func (r *orderRepository) Create(ctx context.Context, order *domain.Order) error {
-	var lastInsertId int64
+	var lastInsertID int64
 	row := r.db.QueryRowContext(ctx, "INSERT INTO "+r.table+"(customer_id, order_num,status) VALUES ($1, $2, $3) RETURNING id", order.CustomerID, order.Num, order.Status)
-	if err := row.Scan(&lastInsertId); err != nil {
+	if err := row.Scan(&lastInsertID); err != nil {
 		return err
 	}
-	order.ID = lastInsertId
+	order.ID = lastInsertID
 	return nil
 }
 
@@ -73,6 +73,10 @@ func (r *orderRepository) GetByNum(ctx context.Context, num string) (order *doma
 	}
 	order = &domain.Order{}
 	err = rows.Scan(&order.ID, &order.CustomerID, &order.Num, &order.Accrual, &order.UploadedAt, &order.Status)
+	if err != nil {
+		return nil, err
+	}
+	err = rows.Err()
 	if err != nil {
 		return nil, err
 	}

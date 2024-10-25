@@ -50,12 +50,12 @@ func NewCustomerRepository(db *sql.DB) (r *customerRepository, err error) {
 }
 
 func (r *customerRepository) Create(ctx context.Context, user *domain.Customer) error {
-	var lastInsertId int64
+	var lastInsertID int64
 	row := r.db.QueryRowContext(ctx, "INSERT INTO "+r.table+"(login, password) VALUES ($1, $2) RETURNING id", user.Login, user.Password)
-	if err := row.Scan(&lastInsertId); err != nil {
+	if err := row.Scan(&lastInsertID); err != nil {
 		return err
 	}
-	user.ID = lastInsertId
+	user.ID = lastInsertID
 	return nil
 }
 
@@ -73,6 +73,10 @@ func (r *customerRepository) GetByLogin(ctx context.Context, login string) (*dom
 	if err != nil {
 		return nil, err
 	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
 	return &customer, nil
 }
 
@@ -87,6 +91,10 @@ func (r *customerRepository) GetByID(ctx context.Context, userID int64) (*domain
 	}
 	var customer domain.Customer
 	err = rows.Scan(&customer.ID, &customer.Login, &customer.Password, &customer.Balance, &customer.Withdrawn)
+	if err != nil {
+		return nil, err
+	}
+	err = rows.Err()
 	if err != nil {
 		return nil, err
 	}

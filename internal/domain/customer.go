@@ -27,8 +27,8 @@ const CustomerIDKey customerContextKey = "x-user-id"
 
 func (c *Customer) MarshalJSON() ([]byte, error) {
 	type aliasCustomer Customer
-	var balance float64 = float64(c.Balance) / 100
-	var withdrawn float64 = float64(c.Withdrawn) / 100
+	var balance = float64(c.Balance) / 100
+	var withdrawn = float64(c.Withdrawn) / 100
 	alias := struct {
 		aliasCustomer
 		Withdrawn float64 `json:"withdrawn"`

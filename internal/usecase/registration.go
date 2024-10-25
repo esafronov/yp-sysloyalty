@@ -37,12 +37,12 @@ func (ru *registrationUsecase) CreateUser(ctx context.Context, customer *domain.
 	return nil
 }
 
-func (su *registrationUsecase) CreateAccessToken(user *domain.Customer, secret string, expiry int) (accessToken string, err error) {
+func (ru *registrationUsecase) CreateAccessToken(user *domain.Customer, secret string, expiry int) (accessToken string, err error) {
 	return token.CreateAccessToken(user, secret, expiry)
 }
 
 /*
-func (su *registrationUsecase) CreateRefreshToken(user *domain.Customer, secret string, expiry int) (refreshToken string, err error) {
+func (ru *registrationUsecase) CreateRefreshToken(user *domain.Customer, secret string, expiry int) (refreshToken string, err error) {
 	return token.CreateRefreshToken(user, secret, expiry)
 }
 */

@@ -49,12 +49,12 @@ func (r *withdrawRepository) createTable() error {
 }
 
 func (r *withdrawRepository) Create(ctx context.Context, withdraw *domain.Withdraw) error {
-	var lastInsertId int64
+	var lastInsertID int64
 	row := r.db.QueryRowContext(ctx, "INSERT INTO "+r.table+"(customer_id, order_num, sum) VALUES ($1, $2, $3) RETURNING id", withdraw.CustomerID, withdraw.OrderNum, withdraw.Sum)
-	if err := row.Scan(&lastInsertId); err != nil {
+	if err := row.Scan(&lastInsertID); err != nil {
 		return err
 	}
-	withdraw.ID = lastInsertId
+	withdraw.ID = lastInsertID
 	return nil
 }
 

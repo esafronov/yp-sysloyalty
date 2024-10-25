@@ -106,8 +106,8 @@ func (p *Poller) Worker(ctx context.Context, orderChan <-chan *domain.Order, wg 
 	}
 }
 
-func (p *Poller) requestUpdate(ctx context.Context, order_num string) (update domain.OrderUpdate, err error) {
-	url := p.endPoint + "/api/orders/" + order_num
+func (p *Poller) requestUpdate(ctx context.Context, orderNum string) (update domain.OrderUpdate, err error) {
+	url := p.endPoint + "/api/orders/" + orderNum
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(p.workerTimeout)*time.Millisecond)
 	defer cancel()
