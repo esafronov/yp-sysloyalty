@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
 	"sync"
@@ -38,14 +39,19 @@ type Poller struct {
 	resultChan     chan *domain.OrderUpdate
 	delayed        bool
 	endPoint       string
+	workerTimeout  int //milliseconds
 }
 
 func NewPoller(params *config.AppParams) *Poller {
+	workerTimeout := 200
+	workerRate := float64(1000 / workerTimeout)
+	workerCount := int(math.Ceil(float64(*params.ProcessRate) / workerRate))
 	return &Poller{
-		workerCount:    *params.PollWorkerCount,
+		workerCount:    workerCount,
 		RetryAfterChan: make(chan int),
-		resultChan:     make(chan *domain.OrderUpdate, 1),
+		resultChan:     make(chan *domain.OrderUpdate, 100),
 		endPoint:       *params.AccrualSystemAddress,
+		workerTimeout:  workerTimeout,
 	}
 }
 
@@ -102,7 +108,11 @@ func (p *Poller) Worker(ctx context.Context, orderChan <-chan *domain.Order, wg 
 
 func (p *Poller) requestUpdate(ctx context.Context, order_num string) (update domain.OrderUpdate, err error) {
 	url := p.endPoint + "/api/orders/" + order_num
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Duration(p.workerTimeout)*time.Millisecond)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(timeoutCtx, http.MethodGet, url, nil)
 	if err != nil {
 		err = fmt.Errorf("new request: %w", err)
 		return

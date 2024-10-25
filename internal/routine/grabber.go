@@ -14,12 +14,15 @@ import (
 type Grabber struct {
 	or           domain.OrderRepository
 	grabInterval time.Duration
+	selectLimit  int
+	performance  int
 }
 
 func NewGrabber(or domain.OrderRepository, params *config.AppParams) *Grabber {
 	return &Grabber{
 		or:           or,
 		grabInterval: time.Duration(*params.GrabInterval) * time.Second,
+		selectLimit:  *params.GrabInterval * *params.ProcessRate,
 	}
 }
 
@@ -51,7 +54,7 @@ func (g *Grabber) Run(appCtx context.Context, retryAfterChan <-chan int, wg *syn
 					ticker.Reset(g.grabInterval)
 				}
 				logger.Log.Info("collect orders for update...")
-				orders, err := g.or.GetNotFinalStatus(appCtx)
+				orders, err := g.or.GetNotFinalStatus(appCtx, g.selectLimit)
 				if err != nil {
 					logger.Log.Error("collect orders for update", zap.Error(err))
 					continue

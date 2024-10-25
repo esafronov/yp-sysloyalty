@@ -46,6 +46,6 @@ type OrderRepository interface {
 	Create(ctx context.Context, order *Order) error
 	GetByNum(ctx context.Context, num string) (*Order, error)
 	GetByCustomer(ctx context.Context, customerID int64) ([]*Order, error)
-	GetNotFinalStatus(ctx context.Context) ([]*Order, error)
+	GetNotFinalStatus(ctx context.Context, limit int) ([]*Order, error)
 	UpdateStatus(ctx context.Context, num string, status OrderStatus) error
 }

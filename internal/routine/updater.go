@@ -29,7 +29,11 @@ func (u *Updater) Run(ctx context.Context, updateChan chan *domain.OrderUpdate, 
 	go func() {
 		defer wg.Done()
 		for update := range updateChan {
-			logger.Log.Info("receive update", zap.String("order", update.Num))
+			logger.Log.Info("received update",
+				zap.String("order", update.Num),
+				zap.String("status", string(update.Status)),
+				zap.Int64("accrual", update.Accrual),
+			)
 			if err := uc.Update(ctx, update); err != nil {
 				logger.Log.Error("update err", zap.String("order", update.Num), zap.Error(err))
 				continue

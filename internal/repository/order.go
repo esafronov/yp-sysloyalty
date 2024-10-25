@@ -98,9 +98,9 @@ func (r *orderRepository) GetByCustomer(ctx context.Context, customerID int64) (
 	return
 }
 
-func (r *orderRepository) GetNotFinalStatus(ctx context.Context) (orders []*domain.Order, err error) {
+func (r *orderRepository) GetNotFinalStatus(ctx context.Context, limit int) (orders []*domain.Order, err error) {
 	orders = make([]*domain.Order, 0)
-	rows, err := r.db.QueryContext(ctx, "SELECT id, customer_id, order_num, accrual, uploaded_at, status FROM "+r.table+" WHERE status IN ($1,$2) ORDER BY uploaded_at DESC", domain.OrderStatusRegistred, domain.OrderStatusProcessing)
+	rows, err := r.db.QueryContext(ctx, "SELECT id, customer_id, order_num, accrual, uploaded_at, status FROM "+r.table+" WHERE status IN ($1,$2) ORDER BY status, uploaded_at LIMIT $3", domain.OrderStatusRegistred, domain.OrderStatusProcessing, limit)
 	if err != nil {
 		return nil, err
 	}

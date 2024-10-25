@@ -29,8 +29,11 @@ func Run() error {
 	logger.Log.Info("params",
 		zap.String("RunAddress", *params.RunAddress),
 		zap.String("DatabaseURI", *params.DatabaseURI),
-		zap.Int("PollWorkerCount", *params.PollWorkerCount),
+		zap.String("AccrualSystemAddress", *params.AccrualSystemAddress),
+		zap.String("AccessTokenSecret", *params.AccessTokenSecret),
+		zap.Int("ExpireAccessToken", *params.ExpireAccessToken),
 		zap.Int("GrabInterval", *params.GrabInterval),
+		zap.Int("ProcessRate", *params.ProcessRate),
 	)
 
 	if err := postgre.Connect(params.DatabaseURI); err != nil {

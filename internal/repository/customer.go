@@ -122,7 +122,7 @@ func (r *customerRepository) Accrual(ctx context.Context, userID int64, orderNum
 		if err := row.Scan(&customer.ID); err != nil {
 			return err
 		}
-		_, err := tx.ExecContext(ctx, "UPDATE "+OrderTable+" SET accrual=$1, order_status=$2 WHERE order_num=$3", sum, domain.OrderStatusProcessed, orderNum)
+		_, err := tx.ExecContext(ctx, "UPDATE "+OrderTable+" SET accrual=$1, status=$2 WHERE order_num=$3", sum, domain.OrderStatusProcessed, orderNum)
 		if err != nil {
 			return err
 		}

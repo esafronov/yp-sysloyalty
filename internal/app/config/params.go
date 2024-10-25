@@ -14,8 +14,9 @@ type AppParams struct {
 	AccessTokenSecret    *string `env:"ACCESS_TOKEN_SECRET"`
 	ExpireAccessToken    *int    `env:"EXPIRE_ACCESS_TOKEN"`
 	GrabInterval         *int    `env:"GRAB_INTERVAL"`
-	PollWorkerCount      *int    `env:"POLL_WORKER_COUNT"`
-	//	RefreshTokenSecret   *string `env:"REFRESH_TOKEN_SECRET"`
+	ProcessRate          *int    `env:"PROCESS_RATE"`
+	//PollWorkerCount      *int    `env:"POLL_WORKER_COUNT"`
+	//	RefreshTokenSsecret   *string `env:"REFRESH_TOKEN_SECRET"`
 	//	ExpireRefreshToken   *int    `env:"EXPIRE_REFRESH_TOKEN"`
 }
 
@@ -43,7 +44,7 @@ func parseFlags(p *AppParams) {
 		p.AccrualSystemAddress = accrualSystemAddressFlag
 	}
 
-	AccessTokenSecretFlag := flag.String("token_secret", "1234", "access token secret")
+	AccessTokenSecretFlag := flag.String("s", "1234", "access token secret")
 	if p.AccessTokenSecret == nil {
 		p.AccessTokenSecret = AccessTokenSecretFlag
 	}
@@ -54,7 +55,7 @@ func parseFlags(p *AppParams) {
 		}
 	*/
 
-	ExpireAccessTokenFlag := flag.Int("expire_access", 1, "expire access token in hours")
+	ExpireAccessTokenFlag := flag.Int("e", 1, "expire access token in hours")
 	if p.ExpireAccessToken == nil {
 		p.ExpireAccessToken = ExpireAccessTokenFlag
 	}
@@ -66,15 +67,21 @@ func parseFlags(p *AppParams) {
 		}
 	*/
 
-	GrabIntervalFlag := flag.Int("grab_interval", 10, "grab orders for update interval in seconds")
+	GrabIntervalFlag := flag.Int("i", 10, "grab orders for update interval in seconds")
 	if p.GrabInterval == nil {
 		p.GrabInterval = GrabIntervalFlag
 	}
 
-	PollWorkerCountFlag := flag.Int("worker_count", 2, "poll status worker count")
-	if p.PollWorkerCount == nil {
-		p.PollWorkerCount = PollWorkerCountFlag
+	ProcessRateFlag := flag.Int("p", 100, "speed of processing, orders per second")
+	if p.ProcessRate == nil {
+		p.ProcessRate = ProcessRateFlag
 	}
+
+	/*	PollWorkerCountFlag := flag.Int("worker_count", 2, "poll status worker count")
+		if p.PollWorkerCount == nil {
+			p.PollWorkerCount = PollWorkerCountFlag
+		}
+	*/
 	flag.Parse()
 }
 
