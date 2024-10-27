@@ -115,7 +115,7 @@ func (r *customerRepository) Withdraw(ctx context.Context, userID int64, orderNu
 		if err != nil {
 			return err
 		}
-		_, err = tx.ExecContext(ctx, "UPDATE "+r.table+" SET balance=balance-$1 WHERE id=$2", sum, userID)
+		_, err = tx.ExecContext(ctx, "UPDATE "+r.table+" SET balance=balance-$1, withdrawn=withdrawn+$1 WHERE id=$2", sum, userID)
 		if err != nil {
 			return err
 		}
