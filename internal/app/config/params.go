@@ -8,16 +8,13 @@ import (
 )
 
 type AppParams struct {
-	RunAddress           *string `env:"RUN_ADDRESS"`
-	DatabaseURI          *string `env:"DATABASE_URI"`
-	AccrualSystemAddress *string `env:"ACCRUAL_SYSTEM_ADDRESS"`
-	AccessTokenSecret    *string `env:"ACCESS_TOKEN_SECRET"`
-	ExpireAccessToken    *int    `env:"EXPIRE_ACCESS_TOKEN"`
-	GrabInterval         *int    `env:"GRAB_INTERVAL"`
-	ProcessRate          *int    `env:"PROCESS_RATE"`
-	//PollWorkerCount      *int    `env:"POLL_WORKER_COUNT"`
-	//	RefreshTokenSsecret   *string `env:"REFRESH_TOKEN_SECRET"`
-	//	ExpireRefreshToken   *int    `env:"EXPIRE_REFRESH_TOKEN"`
+	RunAddress           *string `env:"RUN_ADDRESS"`            //address and port to run service
+	DatabaseURI          *string `env:"DATABASE_URI"`           //database uri
+	AccrualSystemAddress *string `env:"ACCRUAL_SYSTEM_ADDRESS"` //accrual system address
+	AccessTokenSecret    *string `env:"ACCESS_TOKEN_SECRET"`    //access token secret for authorization
+	ExpireAccessToken    *int    `env:"EXPIRE_ACCESS_TOKEN"`    //expire access token in hours
+	GrabInterval         *int    `env:"GRAB_INTERVAL"`          //orders grab interval for update in seconds
+	ProcessRate          *int    `env:"PROCESS_RATE"`           //desired speed of processing, orders per second
 }
 
 func parseEnv(p *AppParams) error {
@@ -44,44 +41,26 @@ func parseFlags(p *AppParams) {
 		p.AccrualSystemAddress = accrualSystemAddressFlag
 	}
 
-	AccessTokenSecretFlag := flag.String("s", "1234", "access token secret")
+	AccessTokenSecretFlag := flag.String("s", "1234", "access token secret for authorization")
 	if p.AccessTokenSecret == nil {
 		p.AccessTokenSecret = AccessTokenSecretFlag
 	}
-
-	/*	RefreshTokenSecretFlag := flag.String("refresh_secret", "1234", "refresh token secret")
-		if p.RefreshTokenSecret == nil {
-			p.RefreshTokenSecret = RefreshTokenSecretFlag
-		}
-	*/
 
 	ExpireAccessTokenFlag := flag.Int("e", 1, "expire access token in hours")
 	if p.ExpireAccessToken == nil {
 		p.ExpireAccessToken = ExpireAccessTokenFlag
 	}
 
-	/*
-		ExpireRefreshTokenFlag := flag.Int("expire_refresh", 3, "expire refresh token (hours)")
-		if p.ExpireRefreshToken == nil {
-			p.ExpireRefreshToken = ExpireRefreshTokenFlag
-		}
-	*/
-
-	GrabIntervalFlag := flag.Int("i", 10, "grab orders for update interval in seconds")
+	GrabIntervalFlag := flag.Int("i", 10, "orders grab interval for update in seconds")
 	if p.GrabInterval == nil {
 		p.GrabInterval = GrabIntervalFlag
 	}
 
-	ProcessRateFlag := flag.Int("p", 100, "speed of processing, orders per second")
+	ProcessRateFlag := flag.Int("p", 100, "desired speed of processing, orders per second")
 	if p.ProcessRate == nil {
 		p.ProcessRate = ProcessRateFlag
 	}
 
-	/*	PollWorkerCountFlag := flag.Int("worker_count", 2, "poll status worker count")
-		if p.PollWorkerCount == nil {
-			p.PollWorkerCount = PollWorkerCountFlag
-		}
-	*/
 	flag.Parse()
 }
 

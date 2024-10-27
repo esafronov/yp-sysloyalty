@@ -56,12 +56,6 @@ func (c *LoginController) Login(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	/*	refreshToken, err := uc.CreateRefreshToken(customer, *c.params.RefreshTokenSecret, *c.params.ExpireRefreshToken)
-		if err != nil {
-			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-	*/
 	reponse := &domain.LoginReponse{
 		AccessToken: accessToken,
 	}

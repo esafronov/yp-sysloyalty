@@ -31,21 +31,22 @@ func NewErrPollRetry(retryAfter int) *ErrPollRetry {
 	}
 }
 
-var ErrNoContent = errors.New("no content")
+var ErrNoContent = errors.New("no content") //http.StatusNoContent
 
 type Poller struct {
-	workerCount    int
-	RetryAfterChan chan int
-	resultChan     chan *domain.OrderUpdate
-	delayed        bool
-	endPoint       string
-	workerTimeout  int //milliseconds
+	workerCount    int                      //worker count
+	RetryAfterChan chan int                 //channel for sending retryAfter signal
+	resultChan     chan *domain.OrderUpdate //results channel
+	delayed        bool                     //workers state
+	endPoint       string                   //accrual system address
+	workerTimeout  int                      //worker request timeout in milliseconds
 }
 
+// poller factory
 func NewPoller(params *config.AppParams) *Poller {
-	workerTimeout := 200
-	workerRate := float64(1000 / workerTimeout)
-	workerCount := int(math.Ceil(float64(*params.ProcessRate) / workerRate))
+	workerTimeout := 200                                                     //worker request timeout
+	workerRate := float64(1000 / workerTimeout)                              //worker perfomance
+	workerCount := int(math.Ceil(float64(*params.ProcessRate) / workerRate)) //calculating workers count needed
 	return &Poller{
 		workerCount:    workerCount,
 		RetryAfterChan: make(chan int),
@@ -55,13 +56,15 @@ func NewPoller(params *config.AppParams) *Poller {
 	}
 }
 
+// runs Poller routine and returns OrderUpdate channel
 func (p *Poller) Run(ctx context.Context, orderChan <-chan *domain.Order, wg *sync.WaitGroup) chan *domain.OrderUpdate {
 	wg.Add(1)
-	var workerWg sync.WaitGroup
+	var workerWg sync.WaitGroup //waitgroup for all poll workers
 	for i := 1; i <= p.workerCount; i++ {
 		go p.Worker(ctx, orderChan, &workerWg, i)
 	}
 	go func() {
+		//wait until all poll workers are finished
 		workerWg.Wait()
 		close(p.resultChan)
 		close(p.RetryAfterChan)
@@ -71,10 +74,11 @@ func (p *Poller) Run(ctx context.Context, orderChan <-chan *domain.Order, wg *sy
 	return p.resultChan
 }
 
+// start poll worker
 func (p *Poller) Worker(ctx context.Context, orderChan <-chan *domain.Order, wg *sync.WaitGroup, i int) {
 	wg.Add(1)
 	defer wg.Done()
-	logger.Log.Info("poll worker started...", zap.Int("num", i))
+	logger.Log.Info("poll worker started...", zap.Int("№", i))
 	for order := range orderChan {
 		select {
 		case <-ctx.Done():
@@ -106,6 +110,7 @@ func (p *Poller) Worker(ctx context.Context, orderChan <-chan *domain.Order, wg 
 	}
 }
 
+// request status for order from Accrual system
 func (p *Poller) requestUpdate(ctx context.Context, orderNum string) (update domain.OrderUpdate, err error) {
 	url := p.endPoint + "/api/orders/" + orderNum
 

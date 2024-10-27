@@ -40,9 +40,3 @@ func (ru *registrationUsecase) CreateUser(ctx context.Context, customer *domain.
 func (ru *registrationUsecase) CreateAccessToken(user *domain.Customer, secret string, expiry int) (accessToken string, err error) {
 	return token.CreateAccessToken(user, secret, expiry)
 }
-
-/*
-func (ru *registrationUsecase) CreateRefreshToken(user *domain.Customer, secret string, expiry int) (refreshToken string, err error) {
-	return token.CreateRefreshToken(user, secret, expiry)
-}
-*/

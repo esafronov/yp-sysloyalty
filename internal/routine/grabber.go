@@ -13,11 +13,11 @@ import (
 
 type Grabber struct {
 	or           domain.OrderRepository
-	grabInterval time.Duration
-	selectLimit  int
-	performance  int
+	grabInterval time.Duration //orders query interval
+	selectLimit  int           //orders query limit
 }
 
+// grabber factory
 func NewGrabber(or domain.OrderRepository, params *config.AppParams) *Grabber {
 	return &Grabber{
 		or:           or,
@@ -26,6 +26,7 @@ func NewGrabber(or domain.OrderRepository, params *config.AppParams) *Grabber {
 	}
 }
 
+// runs grabber routine and returns order channel
 func (g *Grabber) Run(appCtx context.Context, retryAfterChan <-chan int, wg *sync.WaitGroup) chan *domain.Order {
 	ch := make(chan *domain.Order, 1)
 	ticker := time.NewTicker(g.grabInterval)
@@ -45,12 +46,14 @@ func (g *Grabber) Run(appCtx context.Context, retryAfterChan <-chan int, wg *syn
 	out:
 		for {
 			select {
-			case <-appCtx.Done():
+			case <-appCtx.Done(): //app exit signal
 				break out
-			case retryAfter = <-retryAfterChan:
+			case retryAfter = <-retryAfterChan: //retryAfter signal from poll workers
+				//delay grabbing process for retryAfter minutes
 				delayGrabber(retryAfter)
 			case <-ticker.C:
 				if retryAfter > 0 {
+					//restore normal ticker interval
 					ticker.Reset(g.grabInterval)
 				}
 				logger.Log.Info("collect orders for update...")
@@ -61,9 +64,10 @@ func (g *Grabber) Run(appCtx context.Context, retryAfterChan <-chan int, wg *syn
 				}
 				for _, order := range orders {
 					select {
-					case <-appCtx.Done():
+					case <-appCtx.Done(): //app exit signal
 						break out
-					case retryAfter = <-retryAfterChan:
+					case retryAfter = <-retryAfterChan: //retryAfter signal from poll workers
+						//delay grabbing process for retryAfter minutes and return
 						delayGrabber(retryAfter)
 						return
 					default:

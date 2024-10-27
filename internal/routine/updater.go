@@ -16,6 +16,7 @@ type Updater struct {
 	or domain.OrderRepository
 }
 
+// updater factory
 func NewUpdater(or domain.OrderRepository, cr domain.CustomerRepository, params *config.AppParams) *Updater {
 	return &Updater{
 		cr: cr,
@@ -23,6 +24,7 @@ func NewUpdater(or domain.OrderRepository, cr domain.CustomerRepository, params 
 	}
 }
 
+// runs rupdater routine
 func (u *Updater) Run(ctx context.Context, updateChan chan *domain.OrderUpdate, wg *sync.WaitGroup) {
 	uc := usecase.NewOrdersUpdateUsecase(u.or, u.cr)
 	wg.Add(1)

@@ -41,17 +41,24 @@ func Run() error {
 	}
 
 	r := chi.NewRouter()
+	//logger middleware
 	r.Use(middleware.RequestLogger(logger.Log))
+	//compressing middleware
 	r.Use(middleware.GzipCompressing)
 
+	//init customer repository
 	customerRepository, err := repository.NewCustomerRepository(postgre.DB)
 	if err != nil {
 		return err
 	}
+
+	//init order repository
 	orderRepository, err := repository.NewOrderRepository(postgre.DB)
 	if err != nil {
 		return err
 	}
+
+	//init withdraw repository
 	withdrawRepisitory, err := repository.NewWithdrawRepository(postgre.DB)
 	if err != nil {
 		return err
@@ -67,14 +74,17 @@ func Run() error {
 
 	ctx, appExit := context.WithCancel(context.Background())
 
-	var wg sync.WaitGroup
+	var wg sync.WaitGroup //waitgroup for 3 main app routines: grabber, poller, updater
 
+	//initialize poller and grabber routines
 	poller := routine.NewPoller(params)
 	grabber := routine.NewGrabber(orderRepository, params)
 
+	//run grabber and poller routines
 	orderChan := grabber.Run(ctx, poller.RetryAfterChan, &wg)
 	updateChan := poller.Run(ctx, orderChan, &wg)
 
+	//initialize and run updater routine
 	updater := routine.NewUpdater(orderRepository, customerRepository, params)
 	updater.Run(ctx, updateChan, &wg)
 
@@ -87,8 +97,8 @@ func Run() error {
 		signal.Notify(sigs, os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGABRT)
 		s := <-sigs
 		fmt.Println("got signal ", s)
-		appExit()
-		wg.Wait()
+		appExit() //send app exit signal
+		wg.Wait() //wait until all routines are stoped
 		srv.Close()
 	}()
 
