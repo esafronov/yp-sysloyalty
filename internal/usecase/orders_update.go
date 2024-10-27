@@ -23,6 +23,7 @@ func NewOrdersUpdateUsecase(or domain.OrderRepository, cr domain.CustomerReposit
 	}
 }
 
+// update order and implement accrual procedure if require
 func (ou *ordersUpdateUsecase) Update(ctx context.Context, update *domain.OrderUpdate) error {
 	o, err := ou.or.GetByNum(ctx, update.Num)
 	if err != nil {

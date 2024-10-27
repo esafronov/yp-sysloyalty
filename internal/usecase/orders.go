@@ -24,10 +24,12 @@ func NewOrdersUsecase(or domain.OrderRepository) *ordersUsecase {
 	}
 }
 
+// get customer orders
 func (ou *ordersUsecase) GetOrdersByCustomer(ctx context.Context, customerID int64) (orders []*domain.Order, err error) {
 	return ou.or.GetByCustomer(ctx, customerID)
 }
 
+// create new order
 func (ou *ordersUsecase) CreateNewOrder(ctx context.Context, customerID int64, orderNum string) (err error) {
 repeatOrderLoad:
 	order, err := ou.or.GetByNum(ctx, orderNum)

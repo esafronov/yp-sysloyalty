@@ -16,6 +16,7 @@ func NewWithdrawsUsecase(wr domain.WithdrawRepository) *withdrawlsUsecase {
 	}
 }
 
+// returns customer withdrawals
 func (wc *withdrawlsUsecase) GetWithdrawsByCustomer(ctx context.Context, userID int64) (withdraws []*domain.Withdraw, err error) {
 	return wc.wr.GetByCustomer(ctx, userID)
 }
