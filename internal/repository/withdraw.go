@@ -7,7 +7,7 @@ import (
 	"github.com/esafronov/yp-sysloyalty/internal/domain"
 )
 
-const WithdrawTable string = "withdrawls"
+const WithdrawTable string = "withdrawals"
 
 type withdrawRepository struct {
 	db    *sql.DB

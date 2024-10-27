@@ -35,6 +35,10 @@ func (c *BalanceController) Withdraw(res http.ResponseWriter, req *http.Request)
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	logger.Log.Info("withdraw",
+		zap.String("order", request.OrderNum),
+		zap.Int64("sum", request.Sum),
+	)
 	if request.OrderNum == "" || request.Sum == 0 {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return

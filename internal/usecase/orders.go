@@ -45,7 +45,7 @@ repeatOrderLoad:
 	order = &domain.Order{
 		CustomerID: customerID,
 		Num:        orderNum,
-		Status:     domain.OrderStatusRegistred,
+		Status:     domain.OrderStatusProcessing,
 	}
 	if err = ou.or.Create(ctx, order); err != nil {
 		if data, ok := err.(*pgconn.PgError); ok && data.Code == pgerrcode.UniqueViolation {
