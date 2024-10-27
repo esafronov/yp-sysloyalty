@@ -12,6 +12,6 @@ func NewWithdrawlsRoute(r chi.Router, wr domain.WithdrawRepository, params *conf
 	c := controller.NewWithdrawController(wr, params)
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.JwtAuthMiddleware(*params.AccessTokenSecret))
-		r.Get("/withdrawls", c.Withdrawls)
+		r.Get("/withdrawals", c.Withdrawls)
 	})
 }

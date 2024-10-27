@@ -31,13 +31,16 @@ func (o *Order) HasFinalStatus() bool {
 
 func (o *Order) MarshalJSON() ([]byte, error) {
 	formattedDate := o.UploadedAt.Format(time.RFC3339)
+	accrual := float64(o.Accrual) / 100
 	type aliasOrder Order
 	alias := struct {
 		aliasOrder
-		UploadedAt string `json:"uploaded_at"`
+		UploadedAt string  `json:"uploaded_at"`
+		Accrual    float64 `json:"accrual,omitempty"`
 	}{
 		aliasOrder: aliasOrder(*o),
 		UploadedAt: formattedDate,
+		Accrual:    accrual,
 	}
 	return json.Marshal(alias)
 }
